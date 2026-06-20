@@ -29,6 +29,16 @@
   --shadow-md:0 4px 16px rgba(0,0,0,.1),0 1px 4px rgba(0,0,0,.06);
   --r:12px; --r-lg:16px;
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;
+  /* ── v15 learn/dashboard tokens (added to fix undefined-variable bugs) ── */
+  --violet:#5856D6; --violet2:#7C3AED; --indigo:#4F46E5;
+  --emerald:#10B981; --danger:#FF3B30; --coral:#FF6B50;
+  --radius:12px;
+  --grad-v:linear-gradient(135deg,#7C3AED,#5856D6);
+  --grad-green:linear-gradient(135deg,#10B981,#34D399);
+  --grad-coral:linear-gradient(135deg,#FF6B50,#FF8870);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.06);
+  --shadow-lg:0 8px 30px rgba(0,0,0,.12),0 2px 8px rgba(0,0,0,.06);
+  --shadow-glow:0 0 20px rgba(124,58,237,.35);
 }
 [data-theme="dark"] {
   --bg:#000; --surf:#1C1C1E; --surf2:#2C2C2E; --surf3:#3A3A3C;
@@ -42,6 +52,17 @@
   --sep:rgba(255,255,255,.08);
   --shadow:0 1px 3px rgba(0,0,0,.25),0 2px 8px rgba(0,0,0,.15);
   --shadow-md:0 4px 16px rgba(0,0,0,.4),0 1px 4px rgba(0,0,0,.2);
+  /* ── v15 learn/dashboard tokens (dark) ── */
+  --violet:#7C7CF8; --violet2:#A78BFA; --indigo:#818CF8;
+  --emerald:#34D399; --danger:#FF453A; --coral:#FF8870;
+  --radius:12px;
+  --grad-v:linear-gradient(135deg,#A78BFA,#7C7CF8);
+  --grad-green:linear-gradient(135deg,#34D399,#10B981);
+  --grad-coral:linear-gradient(135deg,#FF8870,#FF6B50);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+  --shadow-lg:0 8px 30px rgba(0,0,0,.5),0 2px 8px rgba(0,0,0,.3);
+  --shadow-glow:0 0 20px rgba(167,139,250,.45);
+
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html{height:100%;}
@@ -2352,6 +2373,7 @@ function showPracticeFlow() {
   document.getElementById('practiceHome')      && (document.getElementById('practiceHome').style.display='none');
   document.getElementById('practiceFlowWrap')  && (document.getElementById('practiceFlowWrap').style.display='');
   document.getElementById('practiceDrillWrap') && (document.getElementById('practiceDrillWrap').style.display='none');
+  flowHostId = 'flowContainer';
   if(typeof startFlowMode==='function') startFlowMode(null);
 }
 function showPracticeDrill() {
@@ -3600,9 +3622,10 @@ function startLearnGame(deckId, mode) {
     startListenMode(deckId);
     return;
   } else if (mode === 'flow') {
+    flowHostId = 'flowContainerLearn';
     document.getElementById('learnGameInner').style.display = 'none';
     document.getElementById('listenContainer').style.display = 'none';
-    document.getElementById('flowContainer').style.display = 'block';
+    document.getElementById('flowContainerLearn').style.display = 'block';
     startFlowMode(deckId);
     return;
   } else {
@@ -3628,6 +3651,7 @@ function exitLearnGame() {
   document.getElementById('learnGameInner').style.display = '';
   document.getElementById('listenContainer').style.display = 'none';
   document.getElementById('flowContainer').style.display = 'none';
+  document.getElementById('flowContainerLearn').style.display = 'none';
   stopListenTTS();
   stopRecording(false);
 }
@@ -4174,6 +4198,7 @@ const FLOW_SECTIONS = [
   { id:'close',         label:'Close',        icon:'🤝', field:'callClose'      },
 ];
 
+let flowHostId    = 'flowContainer'; // which container flow renders into (Practice vs Learn)
 let flowPersona   = null;  // active DATA row
 let flowSectionId = 'opener';
 let flowVisited   = new Set();
@@ -4218,7 +4243,7 @@ function getTopicsForPersona(persona) {
 }
 
 function renderFlowPicker() {
-  const wrap = document.getElementById('flowContainer');
+  const wrap = document.getElementById(flowHostId);
   if (!wrap) return;
   const personas = getUniquePersonas();
   const firstTopics = getTopicsForPersona(personas[0]);
@@ -4272,7 +4297,7 @@ function launchFlow() {
 }
 
 function renderFlowSection() {
-  const wrap = document.getElementById('flowContainer');
+  const wrap = document.getElementById(flowHostId);
   if (!wrap || !flowPersona) return;
 
   const sec   = FLOW_SECTIONS.find(s => s.id === flowSectionId) || FLOW_SECTIONS[0];
@@ -4349,7 +4374,7 @@ function flowJumpTo(sectionId) {
   haptic('tap');
   renderFlowSection();
   // Scroll to top of flow container
-  document.getElementById('flowContainer')?.scrollIntoView({behavior:'smooth', block:'start'});
+  document.getElementById(flowHostId)?.scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 function flowHear() {
