@@ -1,4 +1,4 @@
-const CACHE = 'copado-bdr-v7';
+const CACHE = 'copado-bdr-v17';
 const ASSETS = [
   '/Copado-BDR/',
   '/Copado-BDR/index.html',
