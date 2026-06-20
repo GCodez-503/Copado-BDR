@@ -1285,8 +1285,8 @@ input::placeholder,textarea::placeholder { color:var(--t3); }
 
 <body>
 
-<!-- PIN SCREEN -->
-<div id="pinScreen">
+<!-- PIN SCREEN (disabled) -->
+<div id="pinScreen" style="display:none !important;">
   <div class="pin-wrap">
     <div class="pin-logo">🎯</div>
     <div class="pin-title">Copado BDR</div>
@@ -3830,60 +3830,52 @@ if ('serviceWorker' in navigator) {
 }
 
 // ── PIN SCREEN ──
-const PIN_KEY  = 'copado_pin';
+const PIN_KEY     = 'copado_pin';
 const PIN_SESSION = 'copado_unlocked';
-let pinEntry = '';
 
-function pinKey(d) {
-  if (pinEntry.length >= 4) return;
-  pinEntry += d;
-  renderPinDots();
-  if (pinEntry.length === 4) setTimeout(checkPin, 80);
-}
-
-function pinDel() {
-  pinEntry = pinEntry.slice(0, -1);
-  renderPinDots();
-  document.getElementById('pinError').textContent = '';
-}
-
-function renderPinDots() {
-  for (let i = 0; i < 4; i++) {
-    document.getElementById('pd' + i)?.classList.toggle('filled', i < pinEntry.length);
-  }
-}
+function _pinEl()   { return document.getElementById('pinScreen'); }
+function _pinInput(){ return document.getElementById('pinInput');  }
+function _pinErr()  { return document.getElementById('pinError');  }
+function _hidePin() { const el=_pinEl(); if(el) el.style.display='none'; }
+function _showPin() { const el=_pinEl(); if(el) el.style.display='flex'; }
 
 function checkPin() {
+  const val    = (_pinInput()?.value || '').trim();
   const stored = localStorage.getItem(PIN_KEY);
   if (!stored) {
-    // First time — set the PIN
-    localStorage.setItem(PIN_KEY, pinEntry);
+    if (val.length < 1) { _pinErr().textContent = 'Enter a PIN to set.'; return; }
+    localStorage.setItem(PIN_KEY, val);
     sessionStorage.setItem(PIN_SESSION, '1');
-    document.getElementById('pinOverlay').style.display = 'none';
+    _hidePin();
     return;
   }
-  if (pinEntry === stored) {
+  if (val === stored) {
     sessionStorage.setItem(PIN_SESSION, '1');
-    document.getElementById('pinOverlay').style.display = 'none';
+    _hidePin();
   } else {
-    document.getElementById('pinError').textContent = 'Wrong PIN — try again';
-    pinEntry = '';
-    renderPinDots();
+    _pinErr().textContent = 'Wrong PIN — try again';
+    if (_pinInput()) { _pinInput().value = ''; _pinInput().focus(); }
   }
 }
 
-function initPin() {
-  const unlocked = sessionStorage.getItem(PIN_SESSION);
-  const hasPin   = localStorage.getItem(PIN_KEY);
-  if (unlocked) {
-    document.getElementById('pinOverlay').style.display = 'none';
-    return;
-  }
-  document.getElementById('pinOverlay').style.display = 'flex';
-  document.getElementById('pinHint').textContent = hasPin
-    ? 'Enter your PIN to continue.'
-    : 'First time? Set any 4-digit PIN — you\'ll use it every visit.';
+function showSetPin() {
+  localStorage.removeItem(PIN_KEY);
+  sessionStorage.removeItem(PIN_SESSION);
+  if (_pinInput()) _pinInput().value = '';
+  if (_pinErr())   _pinErr().textContent = '';
+  const sub = _pinEl()?.querySelector('.pin-sub');
+  if (sub) sub.textContent = 'Choose a new 4-digit PIN.';
+  _showPin();
 }
+
+function initPin() { /* disabled */ }
+
+// Allow Enter key to submit
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('pinInput')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') checkPin();
+  });
+});
 
 
 
